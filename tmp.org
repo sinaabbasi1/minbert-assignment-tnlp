@@ -1,0 +1,5 @@
+#+TITLE: minbert-assignment/tmp
+
+#+begin_example zsh
+python3 classifier.py --option pretrain --seed 43 --epochs NUM_EPOCHS --lr LR --train data/cfimdb-train.txt --dev data/cfimdb-dev.txt --test data/cfimdb-dev.txt --dev_out my_output/pretrain-cfimdb-dev-out.txt --test_out my_output/pretrain-cfimdb-test-out.txt
+#+end_example
