@@ -41,13 +41,26 @@ class BertSelfAttention(nn.Module):
     # S[*, i, j, k] represents the (unnormalized)attention score between the j-th and k-th token, given by i-th attention head
     # before normalizing the scores, use the attention mask to mask out the padding token scores
     # Note again: in the attention_mask non-padding tokens with 0 and padding tokens with a large negative number 
+    
+    S = torch.bmm(query, key.transpose(2, 3))
 
+    if attention_mask is not None:
+      S = S.masked_fill(attention_mask == 0, -1e10)
+    
     # normalize the scores
+    d_k = key.size(-1)
+    S = S / math.sqrt(d_k)
 
-    # multiply the attention scores to the value and get back V' 
+    m = nn.Softmax(dim=-1)
+    S = m(S) #softmax
+
+    # multiply the attention scores to the value and get back V'
+    attention_per_head = torch.bmm(S, value)
 
     # next, we need to concat multi-heads and recover the original shape [bs, seq_len, num_attention_heads * attention_head_size = hidden_size]
-    raise NotImplementedError
+    attn_value = (attention_per_head.transpose(1, 2).contiguous().view(key.shape[0], key.shape[2], self.num_attention_heads * self.attention_head_size)) # [bs, ]
+    
+    return attn_value
 
   def forward(self, hidden_states, attention_mask):
     """
@@ -91,7 +104,9 @@ class BertLayer(nn.Module):
     dropout: the dropout to be applied 
     ln_layer: the layer norm to be applied
     """
-    # todo
+    
+
+
     raise NotImplementedError
 
   def forward(self, hidden_states, attention_mask):
