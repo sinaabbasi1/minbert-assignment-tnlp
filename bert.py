@@ -120,15 +120,16 @@ class BertLayer(nn.Module):
     """
     # todo
     # multi-head attention w/ self.self_attention
-
+    attn_value = self.self_attention(hidden_states, attention_mask)
     # add-norm layer
-
+    norm1_out = self.add_norm(hidden_states, attn_value, self.attention_dense, self.attention_dropout, self.attention_layer_norm)
     # feed forward
-
+    ff_out = self.interm_dense(norm1_out)
+    ff_out = self.interm_af(ff_out)
     # another add-norm layer
+    norm2_out = self.add_norm(norm1_out, ff_out, self.out_dense, self.out_dropout, self.out_layer_norm)
 
-
-    raise NotImplementedError
+    return norm2_out
 
 
 class BertModel(BertPreTrainedModel):
