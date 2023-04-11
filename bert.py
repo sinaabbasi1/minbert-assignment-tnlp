@@ -105,9 +105,8 @@ class BertLayer(nn.Module):
     ln_layer: the layer norm to be applied
     """
     
-
-
-    raise NotImplementedError
+    added = dense_layer(output) + input
+    return dropout(ln_layer(added))
 
   def forward(self, hidden_states, attention_mask):
     """
