@@ -5,6 +5,7 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from sklearn.metrics import classification_report, f1_score, recall_score, accuracy_score
+import torch.nn as nn
 
 # change it with respect to the original model
 from tokenizer import BertTokenizer
@@ -38,12 +39,23 @@ class BertSentClassifier(torch.nn.Module):
                 param.requires_grad = True
 
         # todo
-        raise NotImplementedError
+        self.classifier_dropout = nn.Dropout(config.hidden_dropout_prob)
+        self.classifier_dense = nn.Linear(config.hidden_size, self.num_labels)
+        # Obtaining log-probabilities in a neural network is easily achieved by adding a LogSoftmax layer in the last layer of your network.
+        # https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html
+        self.softmax = nn.LogSoftmax(dim=-1)
+        
 
     def forward(self, input_ids, attention_mask):
         # todo
         # the final bert contextualize embedding is the hidden state of [CLS] token (the first token)
-        raise NotImplementedError
+
+        bert_model_dic = self.bert(input_ids, attention_mask)
+        contextualized_embed = bert_model_dic['pooler_output']
+        out = self.classifier_dense(self.classifier_dropout(contextualized_embed))
+        out = self.softmax(out)
+
+        return out
 
 # create a custom Dataset Class to be used for the dataloader
 class BertDataset(Dataset):
